@@ -1,5 +1,8 @@
 # Mewtagen
 
+## How to install the packages:
+    pip3 install -r requirements.txt -U
+
 ## How to use the app:
     python3 run.py
 

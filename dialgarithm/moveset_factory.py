@@ -25,10 +25,32 @@ class MovesetFactory:
                     moveset_list += [Moveset(self.dex.get_pokemon(name), m_set) for m_set in movesets]
             print('Read: ' + name)
             return moveset_list
+        except AttributeError:
+            print(name + " failed on access", "RETRYING")
+            sleep(10)
+            # read in json object
+            pokemon_url = 'http://www.smogon.com/dex/' + self.dex.gen + \
+                          '/pokemon/' + self.sanitize_name(name)
+            soup = BeautifulSoup(requests.get(pokemon_url).text, 'html.parser')
+            pokemon_string = soup.script.contents[0]
+            pokemon_string = pokemon_string[pokemon_string.find(r'{'):]
+            formats = json.loads(pokemon_string)['injectRpcs'][2][1]['strategies']
+            moveset_list = []
+            for f in formats:
+                if Format(f['format']) <= self.format:
+                    movesets = f['movesets']
+                    moveset_list += [Moveset(self.dex.get_pokemon(name), m_set) for m_set in movesets]
+            print('Read: ' + name)
+            return moveset_list
         except requests.exceptions.ConnectionError:
             print("CONNECTION DENIED ON " + name, ", RETRYING")
             sleep(30)
             self.read_pokemon(name)
+
+    def sanitize_name(self, name):
+        newName = ''.join(c for c in name if c.isalnum() or c == '-') # Sanitize special chars except '-'
+        print('sanitizing ' + name + ' ==> ' + newName)
+        return newName
 
     def get_movesets(self):
         tentative_movesets = Writer.load_pickled_object('movesets.txt')
@@ -64,6 +86,7 @@ class MovesetFactory:
 
             nested_list = [add_usage(pokemon) for pokemon in list_of_pokemon]
             Model.moveset_dict = {m_set.name: m_set for m_sets in nested_list for m_set in m_sets}
+            print('Finished getting movesets...')
             Writer.save_pickled_object(Model.moveset_dict,
                                        'movesets.txt')
         else:

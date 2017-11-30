@@ -24,6 +24,7 @@ class Damage:
 
     @staticmethod
     def get_all_counters():
+        print('Getting all counters...')
         tentative_counters = Writer.load_pickled_object('counters.txt')
         if tentative_counters is None:
             Model.counters_dict = \
@@ -294,6 +295,8 @@ class Damage:
             print("Getting mutations...")
             tick = time.clock()
             Model.mutation_dict = {moveset: moveset.compute_mutation() for moveset in Model.moveset_list}
+            Writer.save_pickled_object(Model.mutation_dict,
+                                       'mutation.txt')
             print("Mutations took", time.clock() - tick)
         else:
             Model.mutation_dict = tentative_mutations

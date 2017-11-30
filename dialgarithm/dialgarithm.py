@@ -28,7 +28,7 @@ def setup_without_user_input():
     Damage.start()
     # generate normies if necessary
     Metagame.generate_norms()
-    Model.core = []
+    prompt_core()
 
 
 def test_speed():

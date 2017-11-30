@@ -1,11 +1,13 @@
 from .team import *
 from .damage import *
 from .model_local import *
+import sys
 
 
 class Metagame:
     elo_start = 1000
     k = 32
+    limit = 1000
     # generation = 0
     # crossover = 0.8
     # elitism = 0.1
@@ -32,9 +34,11 @@ class Metagame:
 
     @staticmethod
     def generate_norms():
+        print('Generating norms...')
         tentative_norms = Writer.load_pickled_object('norms.txt')
         if tentative_norms is None:
             number_of_norms = 1000
+            print('Generating team from ' + str(Model.core) + '...')
             Model.elo_dict = {Metagame.generate_team(): Metagame.elo_start for _ in range(number_of_norms)}
             for i in range(0, 100):
                 bracket = sorted(Model.elo_dict, key=Model.elo_dict.get)
@@ -45,6 +49,7 @@ class Metagame:
                     team1 = bracket[2 * j]
                     team2 = bracket[2 * j + 1]
                     Metagame.run_battle(team1, team2)
+                print('Progress = ' + str(i) + '%')
             Writer.save_pickled_object(Model.elo_dict, 'norms.txt')
         else:
             Model.elo_dict = tentative_norms
@@ -74,4 +79,5 @@ class Elo:
             result = 1
         else:
             result = 0
-        return elo1 + Metagame.k * (result - Elo.compute_expected(elo1, elo2))
+        output = elo1 + Metagame.k * (result - Elo.compute_expected(elo1, elo2))
+        return output

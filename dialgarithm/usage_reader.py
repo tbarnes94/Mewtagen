@@ -26,8 +26,10 @@ class UsageReader:
         # tags = soup('a')
         # not_metagames = ['../', 'chaos/', 'leads/', 'mega/', 'metagame/', 'monotype/', 'moveset/']
         # metagames = [tag['href'] for tag in tags if tag['href'] not in not_metagames]
-        Model.date = "2017-06/"
-        Model.set_link("ou-1825.txt")
+        Model.date = "2017-10/"
+        date_string = Model.date
+        metagame = "gen7ou-1825.txt"
+        Model.set_link(metagame)
         Model.set_path()
 
         # initializes date if necessary
@@ -35,7 +37,12 @@ class UsageReader:
         # if needs_update and UsageReader.updating:
         # UsageReader.initialize_date(metagames)
         # else:
-        Model.usage_dict = Writer.load_pickled_object('usage.txt', Model.path)
+        # initializes date if necessary
+        needs_update = not os.path.isdir("./" + date_string)
+        if needs_update and UsageReader.updating:
+            UsageReader.initialize_date([metagame])
+        else:
+            Model.usage_dict = Writer.load_pickled_object('usage.txt', Model.path)
 
     # gets most recent date and prints metagames
     @staticmethod
@@ -47,7 +54,7 @@ class UsageReader:
         date_string = tags[-1]['href']
 
         ## TODO: FIX DATES
-        date_string = '2017-06/'
+        date_string = '2017-10/'
         Model.date = date_string
 
         usage_url += date_string
@@ -104,6 +111,8 @@ class UsageReader:
 
     @staticmethod
     def clean_up_usage():
+        if Model.usage_dict == None:
+            Model.usage_dict = {}
         other_mons = [mon for mon in Model.dex.pokemon_dict.keys() if mon not in Model.usage_dict.keys()]
         zeros = {mon: 0 for mon in other_mons}
         Model.usage_dict = {**Model.usage_dict, **zeros}
